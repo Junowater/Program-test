@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Workstation Scheduler</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/settings.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Settings</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Create Line</h2>
+            <form id="createLineForm">
+                <label for="lineName">Name of Line:</label>
+                <input type="text" id="lineName" required><br><br>
+
+                <label for="workstations">Name of Workstations:</label>
+                <div id="workstationsContainer">
+                    <input type="text" class="workstationInput" placeholder="Enter workstation name"><br>
+                </div>
+                <button type="button" id="addWorkstationBtn">Add Another Workstation</button><br><br>
+
+                <label for="numQuarters">Number of Quarters:</label>
+                <input type="number" id="numQuarters" min="1" required><br><br>
+
+                <button type="submit" id="createLineBtn">Create Line</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <a href="home.html" class="button">Back to Home</a>
+    </footer>
+</body>
+<script>
+    document.getElementById('createLineForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const lineName = document.getElementById('lineName').value;
+        const existingLines = JSON.parse(localStorage.getItem('lines')) || [];
+        existingLines.push(lineName);
+        localStorage.setItem('lines', JSON.stringify(existingLines));
+        alert('Line created successfully!');
+    });
+</script>
+<script>
+    document.getElementById('createLineForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const lineName = document.getElementById('lineName').value.trim();
+        const numQuarters = document.getElementById('numQuarters').value.trim();
+        
+        if (lineName && numQuarters) {
+            const lines = JSON.parse(localStorage.getItem('lines')) || [];
+            
+            // Check for duplicate line names
+            if (lines.some(line => line.name === lineName)) {
+                alert('Line name already exists!');
+                return;
+            }
+    
+            // Save line configuration
+            lines.push({ name: lineName, quarters: numQuarters });
+            localStorage.setItem('lines', JSON.stringify(lines));
+            
+            alert(`Line "${lineName}" created successfully!`);
+            document.getElementById('lineName').value = '';
+            document.getElementById('numQuarters').value = '';
+        }
+    });
+    </script>
+    
+</html>

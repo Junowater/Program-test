@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Workstation Scheduler</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Workstation Scheduler</h1>
+    </header>
+    <main>
+        <section>
+            <p>Welcome to the Workstation Scheduler application. This tool helps you manage your team's workstation assignments efficiently. Navigate to the scheduler to start managing assignments or explore other features.</p>
+        </section>
+        <nav>
+            <a href="index.html" class="button">Go WorkStation</a>
+            <a href="settings.html" class="button">Go to Settings</a> <!-- New link added -->
+        </nav>
+    </main>
+    <footer>
+        <p>&copy; 2025 Workstation Scheduler</p>
+    </footer>
+    <script src="js/home.js"></script>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lines = JSON.parse(localStorage.getItem('lines')) || [];
+        const nav = document.querySelector('nav');
+        lines.forEach(line => {
+            const link = document.createElement('a');
+            link.href = `#`; // Placeholder; update as needed
+            link.textContent = line;
+            link.className = 'button';
+            nav.appendChild(link);
+        });
+    });
+</script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const lines = JSON.parse(localStorage.getItem('lines')) || [];
+        const nav = document.querySelector('nav');
+        
+        // Add links for each line
+        lines.forEach(line => {
+            const link = document.createElement('a');
+            link.href = `scheduler.html?line=${encodeURIComponent(line.name)}`; // Pass line name as a query parameter
+            link.className = 'button';
+            link.textContent = `Go to ${line.name}`;
+            nav.appendChild(link);
+        });
+    });
+    </script>
+    
+</html>
