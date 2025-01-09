@@ -350,50 +350,7 @@ function generateSkillsTable() {
 }
 
 // Generate Schedule Table
-
 function generateScheduleTable() {
-    const table = document.getElementById("scheduleTable");
-    table.innerHTML = "";
-
-    // Header Row
-    let headerRow = "<tr><th>Workstations</th>";
-    [...quarters].reverse().forEach(q => { // Reverse quarters for right-to-left
-        headerRow += `<th>${q} <button onclick="rotateQuarter('${q}')">Rotate</button></th>`;
-    });
-    headerRow += "</tr>";
-    table.innerHTML += headerRow;
-
-    // Data Rows
-    workstations.forEach(ws => {
-        let row = `<tr><td>${ws}</td>`;
-        [...quarters].reverse().forEach(q => { // Reverse quarters for right-to-left
-            let cellContent = schedule[q][ws].map(assignment => {
-                let name = assignment.name;
-                let lockState = assignment.lockState;
-                // Check if team member is active and available in this quarter
-                let tm = teamMembers.find(tm => tm.name === name);
-                if (tm && tm.active && !tm.unavailableQuarters.includes(q)) {
-                    return `<div class="draggable ${lockState}" draggable="true" data-quarter="${q}" data-workstation="${ws}" ondragstart="drag(event)" onclick="event.stopPropagation(); toggleLockState(event, '${name}', '${q}', '${ws}')">
-                        ${name}
-                        <button class="remove-btn" onclick="removeTeamMemberFromCell(event, '${name}', '${q}', '${ws}')">X</button>
-                    </div>`;
-                } else {
-                    return '';
-                }
-            }).join('');
-
-            row += `<td class="droppable" onclick="handleCellClick(event)" ondrop="drop(event)" ondragover="allowDrop(event)" data-quarter="${q}" data-workstation="${ws}">
-                ${cellContent}
-            </td>`;
-        });
-        row += "</tr>";
-        table.innerHTML += row;
-    });
-
-    // Update team member pool after generating schedule
-    generateTeamMemberPool();
-}
-
     const table = document.getElementById("scheduleTable");
     table.innerHTML = "";
 
@@ -1119,7 +1076,7 @@ function assignWorkstationsEnhanced(index, teamMemberAssignments, startTime, max
             !teamMemberAssignments[tm.name].assignments[selectedQuarterIndex];
     });
 
-    // Prioritize candidates who did not work on this workstation yesterday
+    // Prioritize candidates who did not work on this workstation “yesterday”
     candidates = candidates.sort((a, b) => {
         let aWorkedYesterday = a.previousStations && a.previousStations.includes(workstation);
         let bWorkedYesterday = b.previousStations && b.previousStations.includes(workstation);
@@ -1149,7 +1106,7 @@ function assignWorkstationsEnhanced(index, teamMemberAssignments, startTime, max
             teamMemberAssignments[tm.name].Hog1or2AssignedToday = true;
         }
 
-        // Add workstation to assignedWorkstations for same station constraint
+        // Add workstation to assignedWorkstations for same-station constraint
         teamMemberAssignments[tm.name].assignedWorkstations.push(workstation);
 
         // Recurse
@@ -1271,7 +1228,7 @@ function renderSnapshotChart(currentSchedule) {
     const teamMemberColors = generateColorArray(teamMembers.length);
     const datasets = teamMembers.map((tm, index) => {
         const data = workstations.map(ws => {
-            // Check if the team member is assigned to this workstation in any quarter today
+            // Check if the team member is assigned to this workstation in any quarter
             let assigned = false;
             quarters.forEach(q => {
                 if (currentSchedule[q][ws].some(a => a.name === tm.name)) {
@@ -1722,7 +1679,7 @@ function rotateAssignmentsPrioritizeNewStation() {
         // Collect previous day's assignments for each team member
         quarters.forEach(q => {
             workstations.forEach(ws => {
-                if (previousSchedule[q][ws].some(a => a.name === tm.name)) {
+                if (previousSchedule[q] && previousSchedule[q][ws].some(a => a.name === tm.name)) {
                     teamMemberAssignments[tm.name].previousStations.push(ws);
                 }
             });
@@ -2037,6 +1994,8 @@ document.getElementById('addWorkstationBtn').addEventListener('click', function 
     if (workstationName) {
         addWorkstation(workstationName);
         document.getElementById('newWorkstationName').value = ''; // Clear input field
+        // Refresh the schedule table in case you want to see changes
+        generateScheduleTable();
     } else {
         alert('Please enter a workstation name.');
     }
@@ -2047,60 +2006,81 @@ document.getElementById('removeWorkstationBtn').addEventListener('click', functi
     if (workstationName) {
         removeWorkstation(workstationName);
         document.getElementById('removeWorkstationName').value = ''; // Clear input field
+        // Refresh the schedule table in case you want to see changes
+        generateScheduleTable();
     } else {
         alert('Please enter a workstation name to remove.');
     }
 });
 
-// Function to refresh the workstation chart/table
-function refreshWorkstationTable() {
-    const table = document.getElementById('scheduleTable');
-    table.innerHTML = ''; // Clear existing content
+// -------------------------------------
+// FIX: Instead of recreating the chart,
+// we simply update the data & call .update()
+// -------------------------------------
 
-    // Create table headers
-    const headerRow = document.createElement('tr');
-    const quarterHeader = document.createElement('th');
-    quarterHeader.textContent = 'Quarter';
-    headerRow.appendChild(quarterHeader);
+// Chart Data for Workstation (Sample) 
+let workstationLabels = [];
+let workstationData = [];
 
-    workstations.forEach(ws => {
-        const wsHeader = document.createElement('th');
-        wsHeader.textContent = ws;
-        headerRow.appendChild(wsHeader);
-    });
-    table.appendChild(headerRow);
+// Create the workstation chart with stacked orientation from the start
+let sampleCtx = document.getElementById('snapshotChart').getContext('2d');
+let workstationChart = new Chart(sampleCtx, {
+    type: 'bar',
+    data: {
+        labels: workstationLabels,
+        datasets: [{
+            label: 'Workstation Data',
+            data: workstationData,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+        }],
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: {
+            duration: 0, // Disable animation
+        },
+        scales: {
+            x: {
+                stacked: true,
+            },
+            y: {
+                stacked: true,
+                beginAtZero: true,
+            },
+        },
+    },
+});
 
-    // Create table rows for each quarter
-    quarters.forEach(q => {
-        const row = document.createElement('tr');
-        const quarterCell = document.createElement('td');
-        quarterCell.textContent = q;
-        row.appendChild(quarterCell);
-
-        workstations.forEach(ws => {
-            const cell = document.createElement('td');
-            cell.textContent = schedule[q][ws]?.length
-                ? schedule[q][ws].map(a => a.name).join(', ')
-                : '-';
-            row.appendChild(cell);
-        });
-
-        table.appendChild(row);
-    });
+/**
+ * Update existing workstationChart data (rather than destroying/recreating).
+ */
+function updateWorkstationChart(labelsArray, dataArray) {
+    // Update labels
+    workstationChart.data.labels = labelsArray;
+    // We are assuming we have only 1 dataset for sample, but you can adapt if needed
+    workstationChart.data.datasets[0].data = dataArray;
+    workstationChart.update(); // Trigger Chart.js to animate the changes
 }
 
-// Update refresh logic in add/remove workstation functions
-const originalAddWorkstation = addWorkstation;
-addWorkstation = function(workstationName) {
-    originalAddWorkstation(workstationName);
-    refreshWorkstationTable(); // Refresh table after adding
-};
+// Hook into the same add/remove workstation button events for the sample chart
+document.getElementById('addWorkstationBtn').addEventListener('click', () => {
+    const newWorkstation = document.getElementById('newWorkstationName').value.trim();
+    if (newWorkstation) {
+        workstationLabels.push(newWorkstation);
+        workstationData.push(0); // just a placeholder
+        updateWorkstationChart(workstationLabels, workstationData);
+    }
+});
 
-const originalRemoveWorkstation = removeWorkstation;
-removeWorkstation = function(workstationName) {
-    originalRemoveWorkstation(workstationName);
-    refreshWorkstationTable(); // Refresh table after removing
-};
-
-// Initial rendering of the table on page load
-document.addEventListener('DOMContentLoaded', refreshWorkstationTable);
+document.getElementById('removeWorkstationBtn').addEventListener('click', () => {
+    const removeWorkstationName = document.getElementById('removeWorkstationName').value.trim();
+    const index = workstationLabels.indexOf(removeWorkstationName);
+    if (index !== -1) {
+        workstationLabels.splice(index, 1);
+        workstationData.splice(index, 1);
+        updateWorkstationChart(workstationLabels, workstationData);
+    }
+});
