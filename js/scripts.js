@@ -303,7 +303,6 @@ function addConstraint() {
     constraintTypeSelect.value = ''; // Reset the select
 }
 
-// Generate Skills Table
 function generateSkillsTable() {
     const table = document.getElementById("skillsTable");
     table.innerHTML = "";
@@ -319,30 +318,26 @@ function generateSkillsTable() {
     // Data Rows
     teamMembers.forEach(tm => {
         let row = `<tr>`;
-        // Team member name with quarter availability dots and delete button
-        row += `<td>`;
-        // Team member name clickable to toggle overall active status
-        row += `<div class="team-member-name-container">`;
-        row += `<span onclick="toggleTeamMemberActive('${tm.name}', this)" class="${tm.active ? '' : 'inactive'}">${tm.name}</span>`;
-        // Delete button
-        row += `<button class="delete-team-member-btn" onclick="deleteTeamMember('${tm.name}')">Delete</button>`;
-        row += `</div>`;
-        // Quarter availability dots
-        row += `<div class="dot-container">`;
+        row += `<td>
+                    <div class="team-member-name-container">
+                        <span onclick="toggleTeamMemberActive('${tm.name}', this)" class="${tm.active ? '' : 'inactive'}">${tm.name}</span>
+                        <button class="delete-team-member-btn" onclick="deleteTeamMember('${tm.name}')">Delete</button>
+                    </div>
+                    <div class="dot-container">`;
         quarters.forEach(q => {
             let isActive = !tm.unavailableQuarters.includes(q);
             row += `<span class="quarter-dot ${isActive ? 'active' : 'inactive'}" onclick="toggleQuarterAvailability('${tm.name}', '${q}', this)" title="${q}"></span>`;
         });
-        row += `</div>`;
-        row += `</td>`;
+        row += `   </div>
+                </td>`;
 
         workstations.forEach(ws => {
             let canDo = tm.stations.includes(ws);
             let partialCanDo = tm.partialStations.includes(ws);
             row += `<td>
-                <span class="dot ${canDo ? 'black-dot' : 'white-dot'}" onclick="toggleSkill('${tm.name}', '${ws}', this)" title="Full Skill"></span>
-                <span class="dot ${partialCanDo ? 'yellow-dot' : 'white-dot'}" onclick="togglePartialSkill('${tm.name}', '${ws}', this)" title="Partial Skill"></span>
-            </td>`;
+                        <span class="dot ${canDo ? 'black-dot' : 'white-dot'}" onclick="toggleSkill('${tm.name}', '${ws}', this)" title="Full Skill"></span>
+                        <span class="dot ${partialCanDo ? 'yellow-dot' : 'white-dot'}" onclick="togglePartialSkill('${tm.name}', '${ws}', this)" title="Partial Skill"></span>
+                    </td>`;
         });
         row += "</tr>";
         table.innerHTML += row;
