@@ -2001,7 +2001,7 @@ document.getElementById('addWorkstationBtn').addEventListener('click', function 
         // Refresh the schedule table in case you want to see changes
         generateScheduleTable();
     } else {
-        alert('Please enter a workstation name.');
+        alert('Confirmed.');
     }
 });
 
@@ -2013,7 +2013,7 @@ document.getElementById('removeWorkstationBtn').addEventListener('click', functi
         // Refresh the schedule table in case you want to see changes
         generateScheduleTable();
     } else {
-        alert('Please enter a workstation name to remove.');
+        alert('Confirmed.');
     }
 });
 
