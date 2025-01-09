@@ -348,6 +348,9 @@ function generateSkillsTable() {
         table.innerHTML += row;
     });
 }
+// After modifying schedule in any function:
+generateScheduleTable();
+generateSkillsTable();  // Refresh the skills chart
 
 // Generate Schedule Table
 function generateScheduleTable() {
