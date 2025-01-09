@@ -305,6 +305,10 @@ function addConstraint() {
 
 function generateSkillsTable() {
     const table = document.getElementById("skillsTable");
+    if (!table) {
+        console.error("Skills table element not found.");
+        return;
+    }
     table.innerHTML = "";
 
     // Header Row
@@ -342,6 +346,8 @@ function generateSkillsTable() {
         row += "</tr>";
         table.innerHTML += row;
     });
+
+    console.log("Skills table regenerated with workstations:", workstations);
 }
 // After modifying schedule in any function:
 generateScheduleTable();
